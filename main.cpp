@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <random>
+
+using namespace std;
 
 // Definir la estructura de un punto en el espacio
 typedef struct {
@@ -10,8 +13,11 @@ typedef struct {
 } Point;
 
 // Función para generar un número aleatorio entre min y max
-double random_double(double min, double max) {
-    return min + ((double)rand() / RAND_MAX) * (max - min);
+double random_double(double min, double max, int seed) {
+    mt19937_64 drng;
+    drng.seed(seed);
+    uniform_real_distribution<double> dist(min, max);
+    return min + (dist(drng) / max) * (max - min);
 }
 
 // Función para calcular la distancia euclidiana entre dos puntos
@@ -95,6 +101,7 @@ void print_results(Point* points, int num_points, Point* centroids, int num_cent
 int main() {
 
     // Configuración del algoritmo
+    int seed=1234;
     int num_points = 1000;          // Número de puntos
     int num_centroids = 2;         // Número de centroides
     int max_iterations = 30;      // Número máximo de iteraciones
@@ -105,16 +112,16 @@ int main() {
     Point* points = (Point*)malloc(num_points * sizeof(Point));
     printf("Generando datos aleatorios... \n\n");
     for (int i = 0; i < num_points; i++) {
-        points[i].x = random_double(min_value, max_value);
-        points[i].y = random_double(min_value, max_value);
+        points[i].x = random_double(min_value, max_value, seed+i);
+        points[i].y = random_double(min_value, max_value, seed+i);
     }
     
     // Creación de los centroides iniciales
     Point* centroids = (Point*)malloc(num_centroids * sizeof(Point));
     printf("Inicializando centroides... \n\n");
     for (int i = 0; i < num_centroids; i++) {
-        centroids[i].x = random_double(min_value, max_value);
-        centroids[i].y = random_double(min_value, max_value);
+        centroids[i].x = random_double(min_value, max_value, seed-i);
+        centroids[i].y = random_double(min_value, max_value, seed-i);
     }
     
     // Asignación inicial de puntos a centroides
