@@ -3,6 +3,7 @@
 #include <math.h>
 #include <time.h>
 #include <random>
+#include <omp.h>
 
 using namespace std;
 
@@ -11,14 +12,6 @@ typedef struct {
     double x;
     double y;
 } Point;
-
-// Función para generar un número aleatorio entre min y max
-double random_double(double min, double max, int seed) {
-    mt19937_64 drng;
-    drng.seed(seed);
-    uniform_real_distribution<double> dist(min, max);
-    return min + (dist(drng) / max) * (max - min);
-}
 
 // Función para calcular la distancia euclidiana entre dos puntos
 double euclidean_distance(Point p1, Point p2) {
@@ -98,30 +91,43 @@ void print_results(Point* points, int num_points, Point* centroids, int num_cent
     fclose(file);
 }
 
-int main() {
-
+int main(int argc, char **argv) {
+    if(argc != 5){
+        fprintf(stderr, "run as ./prog k n nt seed\nk = número de centroides\nn = número de elementos\nnt número de hilos \nseed = semilla\n");
+        exit(EXIT_SUCCESS);
+    }
+    
     // Configuración del algoritmo
-    int seed=1234;
-    int num_points = 1000;          // Número de puntos
-    int num_centroids = 2;         // Número de centroides
-    int max_iterations = 30;      // Número máximo de iteraciones
+    int k = atoi(argv[1]);
+    int n = atoi(argv[2]);
+    int nt = atoi(argv[3]);
+    int seed = atoi(argv[4]);
+
+    int num_centroids = k;         // Número de centroides
+    int num_points = n;            // Número de puntos
+    omp_set_num_threads(nt);       // Número de hilos
+    int max_iterations = 30;       // Número máximo de iteraciones
     double min_value = 0.0;        // Valor mínimo para generar puntos aleatorios
     double max_value = 10.0;       // Valor máximo para generar puntos aleatorios
-    
+
     // Creación de los puntos aleatorios
+    mt19937_64 drng;
+    drng.seed(seed);
+    uniform_real_distribution<double> dist(min_value, max_value);
+
     Point* points = (Point*)malloc(num_points * sizeof(Point));
     printf("Generando datos aleatorios... \n\n");
     for (int i = 0; i < num_points; i++) {
-        points[i].x = random_double(min_value, max_value, seed+i);
-        points[i].y = random_double(min_value, max_value, seed+i);
+        points[i].x = dist(drng);
+        points[i].y = dist(drng);
     }
     
     // Creación de los centroides iniciales
     Point* centroids = (Point*)malloc(num_centroids * sizeof(Point));
     printf("Inicializando centroides... \n\n");
     for (int i = 0; i < num_centroids; i++) {
-        centroids[i].x = random_double(min_value, max_value, seed-i);
-        centroids[i].y = random_double(min_value, max_value, seed-i);
+        centroids[i].x = dist(drng);
+        centroids[i].y = dist(drng);
     }
     
     // Asignación inicial de puntos a centroides
@@ -136,7 +142,6 @@ int main() {
         if(max_iterations < 30){
             printf("Iteracion %i\n", iteration+1);
         }
-       
         assign_points(points, num_points, centroids, num_centroids, assignments, max_iterations);
         update_centroids(points, num_points, centroids, num_centroids, assignments, max_iterations);
         iteration++;
