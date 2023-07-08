@@ -3,6 +3,7 @@
 #include <math.h>
 #include <time.h>
 #include <random>
+#include <cuda.h>
 
 using namespace std;
 
@@ -13,18 +14,15 @@ typedef struct {
 } Point;
 
 // Función para calcular la distancia euclidiana entre dos puntos
-double euclidean_distance(Point p1, Point p2) {
+__device__ double euclidean_distance(Point p1, Point p2) {
     double dx = p1.x - p2.x;
     double dy = p1.y - p2.y;
     return sqrt(dx * dx + dy * dy);
 }
 
-// Función para asignar cada punto al centroide más cercano
-void assign_points(Point* points, int num_points, Point* centroids, int num_centroids, int* assignments, int iteration) {
-    if(iteration < 30){
-        printf("asignando puntos...\n");
-    }
-    for (int i = 0; i < num_points; i++) {
+__global__ void assign_points_kernel(Point* points, int num_points, Point* centroids, int num_centroids, int* assignments) {
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < num_points) {
         double min_distance = INFINITY;
         int centroid_index = 0;
         
@@ -40,6 +38,39 @@ void assign_points(Point* points, int num_points, Point* centroids, int num_cent
         assignments[i] = centroid_index;
     }
 }
+
+void assign_points(Point* points, int num_points, Point* centroids, int num_centroids, int* assignments, int iteration) {
+    if (iteration < 30) {
+        printf("asignando puntos...\n");
+    }
+
+    Point* d_points;
+    Point* d_centroids;
+    int* d_assignments;
+    
+    // Alojar memoria en el dispositivo
+    cudaMalloc((void**)&d_points, num_points * sizeof(Point));
+    cudaMalloc((void**)&d_centroids, num_centroids * sizeof(Point));
+    cudaMalloc((void**)&d_assignments, num_points * sizeof(int));
+    
+    // Copiar datos desde el host al dispositivo
+    cudaMemcpy(d_points, points, num_points * sizeof(Point), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_centroids, centroids, num_centroids * sizeof(Point), cudaMemcpyHostToDevice);
+    
+    // Lanzar el kernel de CUDA
+    int block_size = 256;
+    int num_blocks = (num_points + block_size - 1) / block_size;
+    assign_points_kernel<<<num_blocks, block_size>>>(d_points, num_points, d_centroids, num_centroids, d_assignments);
+    
+    // Copiar los resultados desde el dispositivo al host
+    cudaMemcpy(assignments, d_assignments, num_points * sizeof(int), cudaMemcpyDeviceToHost);
+    
+    // Liberar memoria en el dispositivo
+    cudaFree(d_points);
+    cudaFree(d_centroids);
+    cudaFree(d_assignments);
+}
+
 
 // Función para recalcular las posiciones de los centroides
 void update_centroids(Point* points, int num_points, Point* centroids, int num_centroids, int* assignments, int iteration) {

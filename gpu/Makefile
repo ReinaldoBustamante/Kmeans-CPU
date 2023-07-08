@@ -1,2 +1,2 @@
 all:
-	g++ -O3 -fopenmp main.cpp -o prog
+	nvcc main.cu -O3 -o prog
