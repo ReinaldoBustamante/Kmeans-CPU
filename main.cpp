@@ -25,7 +25,6 @@ void assign_points(Point* points, int num_points, Point* centroids, int num_cent
     if(iteration < 30){
         printf("asignando puntos...\n");
     }
-    #pragma omp parallel for
     for (int i = 0; i < num_points; i++) {
         double min_distance = INFINITY;
         int centroid_index = 0;
@@ -100,21 +99,22 @@ void print_results(Point* points, int num_points, Point* centroids, int num_cent
 }
 
 int main(int argc, char **argv) {
-    if(argc != 5){
+    if(argc != 6){
         fprintf(stderr, "run as ./prog k n nt seed\nk = número de centroides\nn = número de elementos\nnt número de hilos \nseed = semilla\n");
         exit(EXIT_SUCCESS);
     }
     
     // Configuración del algoritmo
-    int k = atoi(argv[1]);
+    int nc = atoi(argv[1]);
     int n = atoi(argv[2]);
-    int nt = atoi(argv[3]);
-    int seed = atoi(argv[4]);
+    int it = atoi(argv[3]);
+    int nt = atoi(argv[4]);
+    int seed = atoi(argv[5]);
 
-    int num_centroids = k;         // Número de centroides
+    int num_centroids = nc;         // Número de centroides
     int num_points = n;            // Número de puntos
     omp_set_num_threads(nt);       // Número de hilos
-    int max_iterations = 30;       // Número máximo de iteraciones
+    int max_iterations = it;       // Número máximo de iteraciones
     double min_value = 0.0;        // Valor mínimo para generar puntos aleatorios
     double max_value = 10.0;       // Valor máximo para generar puntos aleatorios
 
