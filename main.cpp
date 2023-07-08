@@ -75,23 +75,28 @@ void update_centroids(Point* points, int num_points, Point* centroids, int num_c
 
 // Función para imprimir los resultados del algoritmo
 void print_results(Point* points, int num_points, Point* centroids, int num_centroids, int* assignments) {
-    remove("resultados.txt");
-    FILE* file = fopen("resultados.txt", "a");
+    remove("datos.txt");
+    remove("centroide.txt");
+    FILE* file = fopen("datos.txt", "a");
     if (file == NULL) {
         printf("No se pudo crear el archivo.\n");
         return;
     }
-    fprintf(file, "Punto;CoordX;CoordY;Centroide\n");
+    FILE* fileCentroide = fopen("centroide.txt", "a");
+    if (fileCentroide == NULL) {
+        printf("No se pudo crear el archivo.\n");
+        return;
+    }
     for (int i = 0; i < num_points; i++) {
-       fprintf(file, "P%d;%.2f;%.2f;%d\n", i + 1, points[i].x, points[i].y, assignments[i]);
+       fprintf(file, "%.2f;%.2f;%d\n",points[i].x, points[i].y, assignments[i]);
     }
     
     printf("Guardando resultados finales.......\n");
-    fprintf(file,"Guardando resultados finales.......\n");
     for (int i = 0; i < num_centroids; i++) {
-        fprintf(file, "Centroide %d: (%.2f, %.2f)\n", i + 1, centroids[i].x, centroids[i].y);
+        fprintf(fileCentroide, "C%d;%.2f;%.2f\n", i + 1, centroids[i].x, centroids[i].y);
     }
     fclose(file);
+    fclose(fileCentroide);
 }
 
 int main(int argc, char **argv) {
