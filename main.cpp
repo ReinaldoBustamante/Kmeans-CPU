@@ -100,7 +100,7 @@ void print_results(Point* points, int num_points, Point* centroids, int num_cent
 
 int main(int argc, char **argv) {
     if(argc != 6){
-        fprintf(stderr, "run as ./prog k n nt seed\nk = número de centroides\nn = número de elementos\nnt número de hilos \nseed = semilla\n");
+        fprintf(stderr, "run as ./prog nc n it nt seed\nnc = número de centroides\nn = número de elementos\nit = numero de iteraciones\nnt=numero de hilo \nseed = semilla\n");
         exit(EXIT_SUCCESS);
     }
     
