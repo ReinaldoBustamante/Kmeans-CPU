@@ -25,6 +25,7 @@ void assign_points(Point* points, int num_points, Point* centroids, int num_cent
     if(iteration < 30){
         printf("asignando puntos...\n");
     }
+    #pragma omp parallel for
     for (int i = 0; i < num_points; i++) {
         double min_distance = INFINITY;
         int centroid_index = 0;
@@ -51,6 +52,7 @@ void update_centroids(Point* points, int num_points, Point* centroids, int num_c
         printf("Actualizando centroides...\n\n");
     }
     
+    #pragma omp parallel for
     for (int i = 0; i < num_points; i++) {
         int centroid_index = assignments[i];
         counts[centroid_index]++;
@@ -58,6 +60,7 @@ void update_centroids(Point* points, int num_points, Point* centroids, int num_c
         sum_y[centroid_index] += points[i].y;
     }
     
+    #pragma omp parallel for
     for (int i = 0; i < num_centroids; i++) {
         
         if (counts[i] > 0) {
@@ -134,6 +137,7 @@ int main(int argc, char **argv) {
     int* assignments = (int*)malloc(num_points * sizeof(int));
 
     // Medir el tiempo de ejecución
+    printf("Comienza el cálculo... \n\n");
     clock_t start_time = clock();
 
     // Bucle principal del algoritmo
