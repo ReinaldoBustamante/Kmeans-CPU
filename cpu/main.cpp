@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <time.h>
 #include <random>
 #include <omp.h>
 
@@ -143,7 +142,7 @@ int main(int argc, char **argv) {
 
     // Medir el tiempo de ejecución
     printf("Comienza el cálculo... \n\n");
-    clock_t start_time = clock();
+    double time_start = omp_get_wtime();
 
     // Bucle principal del algoritmo
     int iteration = 0;
@@ -157,8 +156,8 @@ int main(int argc, char **argv) {
     }
     
     // Calcular el tiempo transcurrido en segundos
-    clock_t end_time = clock();
-    double execution_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    double time_end = omp_get_wtime();
+    double execution_time = (double)(time_end - time_start);
 
     // Imprimir resultados
     printf("Tiempo de ejecución: %.2f segundos\n", execution_time);
